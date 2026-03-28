@@ -1,0 +1,33 @@
+services:
+  yt-cipher:
+    build: ./infra/yt-cipher
+    restart: unless-stopped
+    environment:
+      - API_TOKEN=musry_cipher_secret
+      - OVERRIDE_PLAYER_VARIANT=IAS
+
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4
+    restart: unless-stopped
+    ports:
+      - '2333:2333'
+    volumes:
+      - ./infra/lavalink/application.yml:/opt/Lavalink/application.yml
+    environment:
+      - LAVALINK_YOUTUBE_OAUTH_TOKEN=${LAVALINK_YOUTUBE_OAUTH_TOKEN}
+    depends_on:
+      - yt-cipher
+
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - LAVALINK_HOST=lavalink
+      - LAVALINK_PORT=2333
+      - LAVALINK_PASSWORD=youshallnotpass
+      - LAVALINK_SECURE=false
+    volumes:
+      - ./apps/bot/src:/app/apps/bot/src
+    depends_on:
+      - lavalink

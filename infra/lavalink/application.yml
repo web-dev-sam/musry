@@ -1,0 +1,39 @@
+server:
+  port: 2333
+  address: 0.0.0.0
+
+lavalink:
+  plugins:
+    - dependency: 'dev.lavalink.youtube:youtube-plugin:1.18.0'
+      repository: 'https://maven.lavalink.dev/releases'
+  server:
+    password: 'youshallnotpass'
+    sources:
+      youtube: false # disabled — handled by the plugin below
+      soundcloud: true
+      http: true
+    bufferDurationMs: 400
+    frameBufferDurationMs: 5000
+    playerUpdateInterval: 5
+    soundcloudSearchEnabled: true
+
+plugins:
+  youtube:
+    enabled: true
+    allowSearch: true
+    allowDirectVideoIds: true
+    allowDirectPlaylistIds: true
+    clients:
+      - TV
+      - WEB
+      - MUSIC
+    clientOptions:
+      WEB:
+        playback: false
+    oauth:
+      enabled: true
+      refreshToken: '${LAVALINK_YOUTUBE_OAUTH_TOKEN}'
+    remoteCipher:
+      url: 'http://yt-cipher:8001'
+      password: 'musry_cipher_secret'
+      userAgent: 'musry'

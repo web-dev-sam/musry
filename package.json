@@ -1,0 +1,16 @@
+{
+  "name": "musry",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "bun --filter @musry/bot dev",
+    "start": "bun --filter @musry/bot start",
+    "typecheck": "cd apps/bot && bun run typecheck",
+    "lint": "cd apps/bot && bun run lint",
+    "lint:fix": "cd apps/bot && bun run lint:fix",
+    "fmt": "cd apps/bot && bun run fmt",
+    "register": "cd apps/bot && bun run register"
+  }
+}
