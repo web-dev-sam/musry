@@ -44,9 +44,11 @@ export class PlayCommand extends BaseCommand {
         volume: 80,
       })
     }
-    if (!player.connected || player.voiceChannelId !== input.voiceChannelId) {
-      player.voiceChannelId = input.voiceChannelId
+    if (!player.connected) {
+      player.options.voiceChannelId = input.voiceChannelId
       await player.connect()
+    } else if (player.voiceChannelId !== input.voiceChannelId) {
+      await player.changeVoiceState({ voiceChannelId: input.voiceChannelId })
     }
 
     const result = await player.search(input.query, input.user)
