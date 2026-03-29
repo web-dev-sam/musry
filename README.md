@@ -44,6 +44,7 @@ Fill in `.env`:
 | `LAVALINK_SECURE` | No | Connect to Lavalink over TLS (default: `false`) |
 | `SOUNDCLOUD_CLIENT_ID` | No | SoundCloud client ID — enables full track playback (without it, tracks play as 30s previews) |
 | `SOUNDCLOUD_OAUTH_TOKEN` | No | SoundCloud OAuth token — required alongside `SOUNDCLOUD_CLIENT_ID` for full playback |
+| `EMPTY_QUEUE_TIMEOUT_MS` | No | How long (in ms) to wait after the queue empties before leaving VC (default: `300000` = 5 min) |
 
 To get your SoundCloud credentials, open browser devtools while logged in to SoundCloud, find any `api-v2.soundcloud.com` request, and extract the `client_id` query parameter and the `OAuth <token>` value from the `Authorization` header.
 

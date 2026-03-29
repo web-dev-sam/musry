@@ -41,7 +41,7 @@ export function createLavalinkManager(client: Client): LavalinkManager {
         destroyPlayer: false,
       },
       onEmptyQueue: {
-        destroyAfterMs: 300_000,
+        destroyAfterMs: Number(process.env.EMPTY_QUEUE_TIMEOUT_MS ?? 300_000),
       },
     },
   })
