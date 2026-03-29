@@ -11,12 +11,13 @@ import {
   createPlayAddedPlaylistEmbed,
   createPlayUsageEmbed,
 } from '@/builders/embed'
+import type { GuildId, VoiceChannelId, ChannelId } from '@/utils/types'
 
 type PlayInput = {
   lavalink: LavalinkManager
-  guildId: string
-  voiceChannelId: string
-  channelId: string
+  guildId: GuildId
+  voiceChannelId: VoiceChannelId
+  channelId: ChannelId
   query: string
   user: User
 }
@@ -76,7 +77,7 @@ export class PlayCommand extends BaseCommand {
       return
     }
     const voiceChannel = interaction.guild?.voiceStates.cache.get(interaction.user.id)?.channel
-    if (!voiceChannel) {
+    if (!voiceChannel?.isVoiceBased()) {
       await interaction.reply({ embeds: [createNotInVoiceChannelEmbed()], flags: MessageFlags.Ephemeral })
       return
     }
@@ -93,9 +94,9 @@ export class PlayCommand extends BaseCommand {
     await this.run(
       {
         lavalink: interaction.client.lavalink,
-        guildId: interaction.guildId,
-        voiceChannelId: voiceChannel.id,
-        channelId: interaction.channelId,
+        guildId: interaction.guildId as GuildId,
+        voiceChannelId: voiceChannel.id as VoiceChannelId,
+        channelId: interaction.channelId as ChannelId,
         query: interaction.options.getString('query', true),
         user: interaction.user,
       },
@@ -128,9 +129,9 @@ export class PlayCommand extends BaseCommand {
     await this.run(
       {
         lavalink: message.client.lavalink,
-        guildId: message.guildId!,
-        voiceChannelId: voiceChannel.id,
-        channelId: message.channelId,
+        guildId: message.guildId! as GuildId,
+        voiceChannelId: voiceChannel.id as VoiceChannelId,
+        channelId: message.channelId as ChannelId,
         query: args,
         user: message.author,
       },

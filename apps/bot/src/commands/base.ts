@@ -2,14 +2,14 @@ import { SlashCommandBuilder } from 'discord.js'
 import { MessageFlags, type ChatInputCommandInteraction, type Message, type SlashCommandOptionsOnlyBuilder } from 'discord.js'
 import type { Player } from 'lavalink-client'
 import { createNotInGuildEmbed, createNotInSameVoiceChannelEmbed } from '@/builders/embed'
-import type { CommandReplyCallback } from '@/utils/types'
+import type { CommandReplyCallback, GuildId, VoiceChannelId } from '@/utils/types'
 
 export type { CommandReplyCallback }
 
 export type CommandContext = {
   player: Player | undefined
-  guildId: string
-  userVoiceChannelId: string | undefined
+  guildId: GuildId
+  userVoiceChannelId: VoiceChannelId | undefined
   reply: CommandReplyCallback
   replyError: CommandReplyCallback
   args: string
@@ -51,7 +51,7 @@ export abstract class BaseCommand {
     }
 
     const player = interaction.client.lavalink.getPlayer(interaction.guildId)
-    const userVoiceChannelId = interaction.guild?.voiceStates.cache.get(interaction.user.id)?.channel?.id
+    const userVoiceChannelId = interaction.guild?.voiceStates.cache.get(interaction.user.id)?.channel?.id as VoiceChannelId | undefined
 
     if (this.requiresSameVoiceChannel && player && player.voiceChannelId !== userVoiceChannelId) {
       await interaction.reply({ embeds: [createNotInSameVoiceChannelEmbed()], flags: MessageFlags.Ephemeral })
@@ -60,7 +60,7 @@ export abstract class BaseCommand {
 
     await this.handle({
       player,
-      guildId: interaction.guildId,
+      guildId: interaction.guildId as GuildId,
       userVoiceChannelId,
       reply: (embed) => interaction.reply({ embeds: [embed] }),
       replyError: (embed) => interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral }),
@@ -71,7 +71,7 @@ export abstract class BaseCommand {
 
   async runFromMessage(message: Message, args: string): Promise<void> {
     const player = message.client.lavalink.getPlayer(message.guildId!)
-    const userVoiceChannelId = message.guild?.voiceStates.cache.get(message.author.id)?.channel?.id
+    const userVoiceChannelId = message.guild?.voiceStates.cache.get(message.author.id)?.channel?.id as VoiceChannelId | undefined
 
     if (this.requiresSameVoiceChannel && player && player.voiceChannelId !== userVoiceChannelId) {
       await message.reply({ embeds: [createNotInSameVoiceChannelEmbed()] })
@@ -82,7 +82,7 @@ export abstract class BaseCommand {
 
     await this.handle({
       player,
-      guildId: message.guildId!,
+      guildId: message.guildId as GuildId,
       userVoiceChannelId,
       reply,
       replyError: reply,

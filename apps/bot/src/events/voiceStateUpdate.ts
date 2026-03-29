@@ -1,9 +1,10 @@
 import type { Client, Guild } from 'discord.js'
 import { EMPTY_VC_TIMEOUT_MS } from '@/constants'
+import type { GuildId } from '@/utils/types'
 
-const emptyVcTimers = new Map<string, ReturnType<typeof setTimeout>>()
+const emptyVcTimers = new Map<GuildId, ReturnType<typeof setTimeout>>()
 
-function cancelTimer(guildId: string): void {
+function cancelTimer(guildId: GuildId): void {
   const timer = emptyVcTimers.get(guildId)
   if (timer != null) {
     clearTimeout(timer)
