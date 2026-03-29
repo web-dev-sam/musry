@@ -1,26 +1,13 @@
-import { MessageFlags, SlashCommandBuilder } from 'discord.js'
-import type { ChatInputCommandInteraction, Message, User } from 'discord.js'
-import type { LavalinkManager } from 'lavalink-client'
-import { BaseCommand, type CommandContext, type CommandReplyCallback } from './base'
+import { SlashCommandBuilder, type ChatInputCommandInteraction } from 'discord.js'
+import { BaseCommand, type CommandContext } from './base'
 import {
-  createNotInGuildEmbed,
-  createNotInVoiceChannelEmbed,
-  createNotInSameVoiceChannelEmbed,
-  createPlayNotFoundEmbed,
-  createPlayAddedTrackEmbed,
   createPlayAddedPlaylistEmbed,
+  createPlayAddedTrackEmbed,
+  createPlayNotFoundEmbed,
   createPlayUsageEmbed,
 } from '@/utils/embed'
-import type { GuildId, VoiceChannelId, ChannelId } from '@/utils/types'
-
-type PlayInput = {
-  lavalink: LavalinkManager
-  guildId: GuildId
-  voiceChannelId: VoiceChannelId
-  channelId: ChannelId
-  query: string
-  user: User
-}
+import { RequireUserInVoiceChannel, RequiresSameVoiceChannelOrBotInEmpty } from '../guards/guards'
+import type { VoiceChannelId } from '@/utils/types'
 
 export class PlayCommand extends BaseCommand {
   readonly name = 'play'
@@ -31,30 +18,39 @@ export class PlayCommand extends BaseCommand {
     return builder.addStringOption((o) => o.setName('query').setDescription('URL or search term').setRequired(true))
   }
 
-  // Unreachable: both execute() and runFromMessage() are overridden.
-  async handle(_ctx: CommandContext): Promise<void> { }
+  override getSlashArgs(interaction: ChatInputCommandInteraction): string {
+    return interaction.options.getString('query', true)
+  }
 
-  private async run(input: PlayInput, reply: CommandReplyCallback, replyError: CommandReplyCallback): Promise<void> {
-    let player = input.lavalink.getPlayer(input.guildId)
+  @RequireUserInVoiceChannel
+  @RequiresSameVoiceChannelOrBotInEmpty
+  async handle(ctx: CommandContext): Promise<void> {
+    if (!ctx.args) {
+      await ctx.replyError(createPlayUsageEmbed())
+      return
+    }
+
+    const voiceChannelId = ctx.userVoiceChannelId!
+    let player = ctx.player
     if (!player) {
-      player = input.lavalink.createPlayer({
-        guildId: input.guildId,
-        voiceChannelId: input.voiceChannelId,
-        textChannelId: input.channelId,
+      player = ctx.client.lavalink.createPlayer({
+        guildId: ctx.guildId,
+        voiceChannelId,
+        textChannelId: ctx.channelId,
         selfDeaf: true,
         volume: 80,
       })
     }
     if (!player.connected) {
-      player.options.voiceChannelId = input.voiceChannelId
+      player.options.voiceChannelId = voiceChannelId as VoiceChannelId
       await player.connect()
-    } else if (player.voiceChannelId !== input.voiceChannelId) {
-      await player.changeVoiceState({ voiceChannelId: input.voiceChannelId })
+    } else if (player.voiceChannelId !== voiceChannelId) {
+      await player.changeVoiceState({ voiceChannelId })
     }
 
-    const result = await player.search(input.query, input.user)
+    const result = await player.search(ctx.args, ctx.user)
     if (!result.tracks.length) {
-      await replyError(createPlayNotFoundEmbed())
+      await ctx.replyError(createPlayNotFoundEmbed())
       return
     }
 
@@ -62,85 +58,12 @@ export class PlayCommand extends BaseCommand {
     if (isPlaylist && result.playlist) {
       player.queue.add(result.tracks)
       if (!player.playing) await player.play()
-      await reply(createPlayAddedPlaylistEmbed(result.playlist.name, result.tracks.length))
+      await ctx.reply(createPlayAddedPlaylistEmbed(result.playlist.name, result.tracks.length))
     } else {
       const track = result.tracks[0]!
       player.queue.add(track)
       if (!player.playing) await player.play()
-      await reply(createPlayAddedTrackEmbed(track.info.title, track.info.author ?? 'Unknown'))
+      await ctx.reply(createPlayAddedTrackEmbed(track.info.title, track.info.author ?? 'Unknown'))
     }
-  }
-
-  override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    if (!interaction.guildId) {
-      await interaction.reply({ embeds: [createNotInGuildEmbed()], flags: MessageFlags.Ephemeral })
-      return
-    }
-    const voiceChannel = interaction.guild?.voiceStates.cache.get(interaction.user.id)?.channel
-    if (!voiceChannel?.isVoiceBased()) {
-      await interaction.reply({ embeds: [createNotInVoiceChannelEmbed()], flags: MessageFlags.Ephemeral })
-      return
-    }
-    const existingPlayer = interaction.client.lavalink.getPlayer(interaction.guildId)
-    if (existingPlayer?.connected && existingPlayer.voiceChannelId !== voiceChannel.id) {
-      const nonBotCount = interaction.guild?.voiceStates.cache.filter(
-        (vs) => vs.channelId === existingPlayer.voiceChannelId && !vs.member?.user.bot
-      ).size ?? 0
-      if (nonBotCount > 0) {
-        await interaction.reply({ embeds: [createNotInSameVoiceChannelEmbed()], flags: MessageFlags.Ephemeral })
-        return
-      }
-    }
-    await this.run(
-      {
-        lavalink: interaction.client.lavalink,
-        guildId: interaction.guildId as GuildId,
-        voiceChannelId: voiceChannel.id as VoiceChannelId,
-        channelId: interaction.channelId as ChannelId,
-        query: interaction.options.getString('query', true),
-        user: interaction.user,
-      },
-      (embed) => interaction.reply({ embeds: [embed] }),
-      (embed) => interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
-    )
-  }
-
-  override async runFromMessage(message: Message, args: string): Promise<void> {
-    if (!message.guildId) {
-      await message.reply({ embeds: [createNotInGuildEmbed()] })
-      return
-    }
-    if (!args) {
-      await message.reply({ embeds: [createPlayUsageEmbed()] })
-      return
-    }
-    const voiceChannel = message.guild?.voiceStates.cache.get(message.author.id)?.channel
-    if (!voiceChannel) {
-      await message.reply({ embeds: [createNotInVoiceChannelEmbed()] })
-      return
-    }
-    const existingPlayer = message.client.lavalink.getPlayer(message.guildId)
-    if (existingPlayer?.connected && existingPlayer.voiceChannelId !== voiceChannel.id) {
-      const nonBotCount = message.guild?.voiceStates.cache.filter(
-        (vs) => vs.channelId === existingPlayer.voiceChannelId && !vs.member?.user.bot
-      ).size ?? 1
-      if (nonBotCount > 0) {
-        await message.reply({ embeds: [createNotInSameVoiceChannelEmbed()] })
-        return
-      }
-    }
-    const reply: CommandReplyCallback = (embed) => message.reply({ embeds: [embed] })
-    await this.run(
-      {
-        lavalink: message.client.lavalink,
-        guildId: message.guildId as GuildId,
-        voiceChannelId: voiceChannel.id as VoiceChannelId,
-        channelId: message.channelId as ChannelId,
-        query: args,
-        user: message.author,
-      },
-      reply,
-      reply
-    )
   }
 }

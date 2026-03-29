@@ -1,5 +1,5 @@
-class ParsedArgs {
-  constructor(private values: Map<string, number | boolean>) {}
+export class ParsedArgs {
+  constructor(private readonly values: Map<string, number | boolean>) {}
 
   getNumber(name: string): number | undefined {
     const v = this.values.get(name)
@@ -13,7 +13,7 @@ class ParsedArgs {
 }
 
 export class MessageParser {
-  private readonly options: AnyOption[] = []
+  readonly options: AnyOption[] = []
 
   addNumberOption(config: NumberOptionConfig): this {
     this.options.push({ ...config, type: 'number' })

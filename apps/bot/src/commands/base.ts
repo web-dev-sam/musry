@@ -1,8 +1,9 @@
 import { SlashCommandBuilder } from 'discord.js'
-import { MessageFlags, type ChatInputCommandInteraction, type Message, type SlashCommandOptionsOnlyBuilder } from 'discord.js'
+import { MessageFlags, type ChatInputCommandInteraction, type Client, type Guild, type Message, type SlashCommandOptionsOnlyBuilder, type User } from 'discord.js'
 import type { Player } from 'lavalink-client'
 import { createNotInGuildEmbed } from '@/utils/embed'
-import type { CommandReplyCallback, GuildId, VoiceChannelId } from '@/utils/types'
+import type { ParsedArgs } from '@/utils/parser'
+import type { ChannelId, CommandReplyCallback, GuildId, VoiceChannelId } from '@/utils/types'
 
 export type { CommandReplyCallback }
 
@@ -14,16 +15,26 @@ export type { CommandReplyCallback }
 export type CommandContext = {
   /** The active Lavalink player for this guild, or `undefined` if none exists yet. */
   player: Player | undefined
+  /** The Discord client. */
+  client: Client
+  /** The guild the command was invoked in, or `null` if not cached. */
+  guild: Guild | null
   /** The guild the command was invoked in. */
   guildId: GuildId
+  /** The text channel the command was sent in. */
+  channelId: ChannelId
+  /** The user who invoked the command. */
+  user: User
   /** The voice channel the invoking user is currently in, or `undefined` if they aren't in one. */
   userVoiceChannelId: VoiceChannelId | undefined
   /** Send a normal (visible) embed reply. */
   reply: CommandReplyCallback
   /** Send an ephemeral embed reply (only visible to the invoking user). */
   replyError: CommandReplyCallback
-  /** Raw argument string (empty for slash commands). */
+  /** Raw argument string. For slash commands this is populated by {@link BaseCommand.getSlashArgs}. */
   args: string
+  /** Parsed arguments populated by `@WithParser`. `undefined` for commands that don't use it. */
+  commandArgs: ParsedArgs | undefined
   /** Whether the command came from a slash interaction or a message prefix. */
   source: 'slash' | 'message'
 }
@@ -58,6 +69,15 @@ export abstract class BaseCommand {
     return builder
   }
 
+  /**
+   * Override to extract slash command options into the `args` string on
+   * {@link CommandContext}. Called by {@link execute} before assembling context.
+   * Commands that read from `ctx.args` in `handle` should override this.
+   */
+  getSlashArgs(_interaction: ChatInputCommandInteraction): string {
+    return ''
+  }
+
   /** Returns the built slash command payload and the full alias list. */
   get data(): { builder: SlashCommandOptionsOnlyBuilder; aliases: string[] } {
     const builder = new SlashCommandBuilder().setName(this.name).setDescription(this.description)
@@ -85,11 +105,16 @@ export abstract class BaseCommand {
 
     await this.handle({
       player,
+      client: interaction.client,
+      guild: interaction.guild,
       guildId: interaction.guildId as GuildId,
+      channelId: interaction.channelId as ChannelId,
+      user: interaction.user,
       userVoiceChannelId,
       reply: (embed) => interaction.reply({ embeds: [embed] }),
       replyError: (embed) => interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral }),
-      args: '',
+      args: this.getSlashArgs(interaction),
+      commandArgs: undefined,
       source: 'slash',
     })
   }
@@ -103,11 +128,16 @@ export abstract class BaseCommand {
 
     await this.handle({
       player,
+      client: message.client,
+      guild: message.guild,
       guildId: message.guildId as GuildId,
+      channelId: message.channelId as ChannelId,
+      user: message.author,
       userVoiceChannelId,
       reply,
       replyError: reply,
       args,
+      commandArgs: undefined,
       source: 'message',
     })
   }
