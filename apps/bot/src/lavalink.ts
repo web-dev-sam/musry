@@ -1,6 +1,6 @@
 import { LavalinkManager } from 'lavalink-client'
 import type { Client } from 'discord.js'
-import { createFallbackEmbed } from './utils/embed'
+import { createFallbackEmbed, createNowPlayingEmbed } from './utils/embed'
 
 function isYouTubeUrl(uri: string): boolean {
   return uri.includes('youtube.com/') || uri.includes('youtu.be/')
@@ -52,8 +52,15 @@ export function createLavalinkManager(client: Client): LavalinkManager {
     console.error(`[Lavalink] Node ${node.id} error:`, error)
   })
 
-  manager.on('trackStart', (player, track) => {
+  manager.on('trackStart', async (player, track) => {
     console.log(`[Lavalink] Track started in guild ${player.guildId}: ${track?.info.title ?? 'Unknown title'}`)
+    if (!track || !player.textChannelId) return
+    const channel = await client.channels.fetch(player.textChannelId).catch(() => null)
+    if (channel?.isSendable()) {
+      await channel
+        .send({ embeds: [createNowPlayingEmbed(track.info.title, track.info.author ?? 'Unknown', track.info.uri, track.info.sourceName)] })
+        .catch((e) => console.error(`[musry] Failed to send now playing embed:`, e))
+    }
   })
 
   manager.on('trackEnd', (player, track) => {

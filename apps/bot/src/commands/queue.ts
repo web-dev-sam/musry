@@ -18,6 +18,8 @@ export class QueueCommand extends BaseCommand {
         {
           title: current.info.title,
           author: current.info.author,
+          uri: current.info.uri,
+          sourceName: current.info.sourceName,
           position: formatDuration(player.position),
           duration: formatDuration(current.info.duration),
         },

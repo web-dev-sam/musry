@@ -1,22 +1,22 @@
 import { EmbedBuilder } from 'discord.js'
 import { PREFIX } from '@/constants'
 
+const PRIMARY = 0xbc96e8
 const RED = 0xed4245
-const YELLOW = 0xfee75c
-const GREEN = 0x57f287
-const BLURPLE = 0x5865f2
+const YOUTUBE = 0xff1538
+const SOUNDCLOUD = 0xff7400
+const GRAY = 0x9e9e9e
 
+function primaryEmbed() {
+  return new EmbedBuilder().setColor(PRIMARY)
+}
 function errorEmbed() {
   return new EmbedBuilder().setColor(RED)
 }
-function warnEmbed() {
-  return new EmbedBuilder().setColor(YELLOW)
-}
-function successEmbed() {
-  return new EmbedBuilder().setColor(GREEN)
-}
-function infoEmbed() {
-  return new EmbedBuilder().setColor(BLURPLE)
+function sourceColor(sourceName: string | undefined): number {
+  if (sourceName === 'youtube' || sourceName === 'youtubemusic') return YOUTUBE
+  if (sourceName === 'soundcloud') return SOUNDCLOUD
+  return GRAY
 }
 
 // ── Shared ────────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ export function createCommandErrorEmbed(): EmbedBuilder {
 // ── Help ──────────────────────────────────────────────────────────────────────
 
 export function createHelpEmbed(): EmbedBuilder {
-  return infoEmbed()
+  return primaryEmbed()
     .setTitle('Commands')
     .setDescription(
       [
@@ -72,14 +72,14 @@ export function createPlayNotFoundEmbed(): EmbedBuilder {
 }
 
 export function createPlayAddedTrackEmbed(title: string, author: string): EmbedBuilder {
-  return infoEmbed()
+  return primaryEmbed()
     .setTitle('Added to Queue')
     .setDescription(`**${title}**`)
     .addFields({ name: 'By', value: author, inline: true })
 }
 
 export function createPlayAddedPlaylistEmbed(name: string, count: number): EmbedBuilder {
-  return infoEmbed()
+  return primaryEmbed()
     .setTitle('Added Playlist')
     .setDescription(`**${name}**`)
     .addFields({ name: 'Tracks', value: String(count), inline: true })
@@ -88,19 +88,19 @@ export function createPlayAddedPlaylistEmbed(name: string, count: number): Embed
 // ── Skip ──────────────────────────────────────────────────────────────────────
 
 export function createSkipEmbed(title: string): EmbedBuilder {
-  return infoEmbed().setDescription(`Skipped **${title}**.`)
+  return primaryEmbed().setDescription(`Skipped **${title}**.`)
 }
 
 // ── Stop ──────────────────────────────────────────────────────────────────────
 
 export function createStopEmbed(): EmbedBuilder {
-  return infoEmbed().setDescription('Stopped playback and cleared the queue.')
+  return primaryEmbed().setDescription('Stopped playback and cleared the queue.')
 }
 
 // ── Pause ─────────────────────────────────────────────────────────────────────
 
 export function createPausedEmbed(resumeHint: string): EmbedBuilder {
-  return warnEmbed().setDescription(`Paused. Use \`${resumeHint}\` to continue.`)
+  return primaryEmbed().setDescription(`Paused. Use \`${resumeHint}\` to continue.`)
 }
 
 export function createPauseAlreadyPausedEmbed(resumeHint: string): EmbedBuilder {
@@ -110,7 +110,7 @@ export function createPauseAlreadyPausedEmbed(resumeHint: string): EmbedBuilder 
 // ── Resume ────────────────────────────────────────────────────────────────────
 
 export function createResumedEmbed(): EmbedBuilder {
-  return successEmbed().setDescription('Resumed playback.')
+  return primaryEmbed().setDescription('Resumed playback.')
 }
 
 export function createResumeNotPausedEmbed(): EmbedBuilder {
@@ -121,11 +121,27 @@ export function createResumeNotPausedEmbed(): EmbedBuilder {
 
 export function createSpeedEmbed(displayPercent: string, pitch: boolean): EmbedBuilder {
   const note = pitch ? '' : ' (pitch unchanged)'
-  return infoEmbed().setDescription(`Playback speed set to **${displayPercent}**${note}.`)
+  return primaryEmbed().setDescription(`Playback speed set to **${displayPercent}**${note}.`)
 }
 
 export function createSpeedUsageEmbed(): EmbedBuilder {
   return errorEmbed().setDescription(`Usage: \`${PREFIX}speed <50–200> [pitch:false]\``)
+}
+
+// ── Now Playing ───────────────────────────────────────────────────────────────
+
+export function createNowPlayingEmbed(
+  title: string,
+  author: string,
+  uri: string | undefined,
+  sourceName: string | undefined
+): EmbedBuilder {
+  const embed = new EmbedBuilder()
+    .setColor(sourceColor(sourceName))
+    .setTitle(title)
+    .setDescription(author)
+  if (uri) embed.setURL(uri)
+  return embed
 }
 
 // ── Queue ─────────────────────────────────────────────────────────────────────
@@ -133,14 +149,18 @@ export function createSpeedUsageEmbed(): EmbedBuilder {
 type QueueTrack = { title: string; duration: string }
 
 export function createQueueEmbed(
-  nowPlaying: { title: string; author: string; position: string; duration: string },
+  nowPlaying: { title: string; author: string; uri: string | undefined; sourceName: string | undefined; position: string; duration: string },
   paused: boolean,
   upcoming: QueueTrack[],
   remaining: number
 ): EmbedBuilder {
-  const embed = infoEmbed()
+  const titleLink = nowPlaying.uri
+    ? `**[${nowPlaying.title}](${nowPlaying.uri})**`
+    : `**${nowPlaying.title}**`
+  const embed = new EmbedBuilder()
+    .setColor(sourceColor(nowPlaying.sourceName))
     .setTitle(`Now Playing${paused ? ' (paused)' : ''}`)
-    .setDescription(`**${nowPlaying.title}**\n${nowPlaying.author} · [${nowPlaying.position}/${nowPlaying.duration}]`)
+    .setDescription(`${titleLink}\n${nowPlaying.author} · [${nowPlaying.position}/${nowPlaying.duration}]`)
 
   if (upcoming.length > 0) {
     const lines = upcoming.map((t, i) => `${i + 1}. ${t.title} [${t.duration}]`)
@@ -158,7 +178,7 @@ export function createBotNotInVoiceChannelEmbed(): EmbedBuilder {
 }
 
 export function createLeaveEmbed(): EmbedBuilder {
-  return successEmbed().setDescription('Left the voice channel.')
+  return primaryEmbed().setDescription('Left the voice channel.')
 }
 
 // ── Fallback ──────────────────────────────────────────────────────────────────
@@ -168,7 +188,7 @@ export function createFallbackEmbed(
   fallbackTitle: string,
   fallbackAuthor: string
 ): EmbedBuilder {
-  return warnEmbed()
+  return primaryEmbed()
     .setTitle('SoundCloud fallback')
     .setDescription(
       `YouTube failed for **${originalTitle}**\nPlaying instead: **${fallbackTitle}** by ${fallbackAuthor}`
