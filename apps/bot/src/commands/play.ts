@@ -63,7 +63,7 @@ export class PlayCommand extends BaseCommand {
       const track = result.tracks[0]!
       player.queue.add(track)
       if (!player.playing) await player.play()
-      await ctx.reply(createPlayAddedTrackEmbed(track.info.title, track.info.author ?? 'Unknown'))
+      await ctx.reply(createPlayAddedTrackEmbed(track.info.title, track.info.author ?? 'Unknown', track.info.uri, track.info.sourceName))
     }
   }
 }

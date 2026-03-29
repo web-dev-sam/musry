@@ -71,10 +71,17 @@ export function createPlayNotFoundEmbed(): EmbedBuilder {
   return errorEmbed().setDescription('Nothing found for that query.')
 }
 
-export function createPlayAddedTrackEmbed(title: string, author: string): EmbedBuilder {
-  return primaryEmbed()
+export function createPlayAddedTrackEmbed(
+  title: string,
+  author: string,
+  uri: string | undefined,
+  sourceName: string | undefined
+): EmbedBuilder {
+  const titleText = uri ? `**[${title}](${uri})**` : `**${title}**`
+  return new EmbedBuilder()
+    .setColor(sourceColor(sourceName))
     .setTitle('Added to Queue')
-    .setDescription(`**${title}**`)
+    .setDescription(titleText)
     .addFields({ name: 'By', value: author, inline: true })
 }
 
