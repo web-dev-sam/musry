@@ -58,8 +58,9 @@ export function createLavalinkManager(client: Client): LavalinkManager {
     console.error(`[Lavalink] Node ${node.id} error:`, error)
   })
 
-  manager.on('trackStart', async (player, track) => {
-    console.log(`[Lavalink] Track started in guild ${player.guildId}: ${track?.info.title ?? 'Unknown title'}`)
+  manager.on('trackStart', async (player, track, payload) => {
+    const isManual = manualPlay.has(player.guildId)
+    console.log(`[trackStart] "${track?.info.title}" | manual=${isManual} | playing=${player.playing} | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
     if (manualPlay.delete(player.guildId)) return
     if (!track || !player.textChannelId) return
     const channel = await client.channels.fetch(player.textChannelId).catch(() => null)
@@ -70,12 +71,16 @@ export function createLavalinkManager(client: Client): LavalinkManager {
     }
   })
 
-  manager.on('trackEnd', (player, track) => {
-    console.log(`[Lavalink] Track ended in guild ${player.guildId}: ${track?.info.title ?? 'Unknown title'}`)
+  manager.on('trackEnd', (player, track, payload) => {
+    console.log(`[trackEnd] "${track?.info.title}" | reason=${payload.reason} | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
+  })
+
+  manager.on('trackStuck', (player, track, payload) => {
+    console.warn(`[trackStuck] "${track?.info.title}" | threshold=${payload.thresholdMs}ms | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
   })
 
   manager.on('trackError', async (player, track, payload) => {
-    console.error(`[Lavalink] Track error in guild ${player.guildId}:`, payload.exception?.message ?? payload.exception)
+    console.error(`[trackError] "${track?.info.title}" | ${payload.exception?.message ?? JSON.stringify(payload.exception)} | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
 
     if (!track?.info.uri || !isYouTubeUrl(track.info.uri)) {
       console.log(`[musry] [SC-fallback] Not a YouTube track, skipping SoundCloud fallback`)
