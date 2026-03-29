@@ -27,7 +27,7 @@ export abstract class BaseCommand {
   readonly requiresSameVoiceChannel: boolean = false
 
   /** Override to add slash command options. Return the modified builder. */
-  buildOptions(builder: SlashCommandBuilder): SlashCommandBuilder | SlashCommandOptionsOnlyBuilder {
+  buildOptions(builder: SlashCommandBuilder): SlashCommandOptionsOnlyBuilder {
     return builder
   }
 
