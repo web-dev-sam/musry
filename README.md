@@ -32,13 +32,16 @@ cp .env.example .env
 
 Fill in `.env`:
 
-| Variable | Description |
-|---|---|
-| `DISCORD_TOKEN` | Your Discord bot token |
-| `CLIENT_ID` | Your Discord application client ID |
-| `LAVALINK_YOUTUBE_OAUTH_TOKEN` | YouTube OAuth refresh token (enables YouTube playback) |
-
-The remaining variables (`LAVALINK_HOST`, `LAVALINK_PORT`, etc.) are pre-filled with defaults that match the Docker setup and don't need to be changed unless you're running Lavalink separately.
+| Variable | Required | Description |
+|---|---|---|
+| `DISCORD_TOKEN` | Yes | Your Discord bot token |
+| `CLIENT_ID` | Yes | Your Discord application client ID |
+| `LAVALINK_PASSWORD` | Yes | Shared secret between the bot and Lavalink — set to any strong password |
+| `LAVALINK_YOUTUBE_OAUTH_TOKEN` | Yes | YouTube OAuth refresh token (enables YouTube playback) |
+| `GUILD_ID` | No | If set, also registers commands instantly to this guild — useful during development |
+| `LAVALINK_HOST` | No | Lavalink hostname (default: `localhost`, pre-set to `lavalink` in Docker) |
+| `LAVALINK_PORT` | No | Lavalink port (default: `2333`) |
+| `LAVALINK_SECURE` | No | Connect to Lavalink over TLS (default: `false`) |
 
 ### 3. Register slash commands
 
@@ -70,6 +73,12 @@ This starts three services:
 | `/speed <50–200>` | `.speed` | Set playback speed (100 = normal) |
 
 The default message prefix is `.`. Both slash commands and message commands are supported.
+
+## Security
+
+`LAVALINK_PASSWORD` is a shared secret used to authenticate the bot with the Lavalink server. In the default Docker Compose setup, Lavalink's port (`2333`) is only accessible within the Docker network.
+
+However, if you ever expose port `2333` publicly (e.g. running Lavalink on a separate server with a firewall rule or reverse proxy), a weak or default password lets anyone connect to your Lavalink instance and use it to stream audio, consuming your bandwidth and server resources. Set a strong value and keep it out of version control.
 
 ## Development
 
