@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, MessageFlags, type InteractionReplyOptions }
 import { createLavalinkManager } from '@/lavalink'
 import { register as registerReady } from '@/events/ready'
 import { register as registerMessageCommands } from '@/events/messageCreate'
+import { register as registerVoiceStateUpdate } from '@/events/voiceStateUpdate'
 import { commands } from '@/commands'
 import { createCommandErrorEmbed } from '@/builders/embed'
 
@@ -51,5 +52,6 @@ client.on('interactionCreate', async (interaction) => {
 
 registerReady(client)
 registerMessageCommands(client)
+registerVoiceStateUpdate(client)
 
 await client.login(process.env.DISCORD_TOKEN)
