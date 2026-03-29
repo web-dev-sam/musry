@@ -8,4 +8,4 @@ RUN bun install --frozen-lockfile
 COPY apps/bot/ apps/bot/
 
 WORKDIR /app/apps/bot
-CMD ["bun", "--watch", "src/index.ts"]
+CMD ["bun", "src/index.ts"]

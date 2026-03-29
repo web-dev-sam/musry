@@ -15,6 +15,7 @@ services:
       - ./infra/lavalink/application.yml:/opt/Lavalink/application.yml
     environment:
       - LAVALINK_YOUTUBE_OAUTH_TOKEN=${LAVALINK_YOUTUBE_OAUTH_TOKEN}
+      - LAVALINK_PASSWORD=${LAVALINK_PASSWORD}
     depends_on:
       - yt-cipher
 
@@ -25,7 +26,7 @@ services:
     environment:
       - LAVALINK_HOST=lavalink
       - LAVALINK_PORT=2333
-      - LAVALINK_PASSWORD=youshallnotpass
+      - LAVALINK_PASSWORD=${LAVALINK_PASSWORD}
       - LAVALINK_SECURE=false
     volumes:
       - ./apps/bot/src:/app/apps/bot/src
