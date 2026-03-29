@@ -146,7 +146,7 @@ export function createNowPlayingEmbed(
   const embed = new EmbedBuilder()
     .setColor(sourceColor(sourceName))
     .setTitle(title)
-    .setDescription(author)
+    .addFields({ name: 'By', value: author, inline: true })
   if (uri) embed.setURL(uri)
   return embed
 }

@@ -13,6 +13,12 @@ async function fetchYouTubeTitle(uri: string): Promise<string | null> {
   return data.title ?? null
 }
 
+const manualPlay = new Set<string>()
+
+export function markManualPlay(guildId: string): void {
+  manualPlay.add(guildId)
+}
+
 export function createLavalinkManager(client: Client): LavalinkManager {
   const manager = new LavalinkManager({
     nodes: [
@@ -54,6 +60,7 @@ export function createLavalinkManager(client: Client): LavalinkManager {
 
   manager.on('trackStart', async (player, track) => {
     console.log(`[Lavalink] Track started in guild ${player.guildId}: ${track?.info.title ?? 'Unknown title'}`)
+    if (manualPlay.delete(player.guildId)) return
     if (!track || !player.textChannelId) return
     const channel = await client.channels.fetch(player.textChannelId).catch(() => null)
     if (channel?.isSendable()) {
