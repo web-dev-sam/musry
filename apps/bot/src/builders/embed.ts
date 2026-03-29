@@ -153,6 +153,10 @@ export function createQueueEmbed(
 
 // ── Leave ─────────────────────────────────────────────────────────────────────
 
+export function createBotNotInVoiceChannelEmbed(): EmbedBuilder {
+  return errorEmbed().setDescription('The bot is not in a voice channel.')
+}
+
 export function createLeaveEmbed(): EmbedBuilder {
   return successEmbed().setDescription('Left the voice channel.')
 }

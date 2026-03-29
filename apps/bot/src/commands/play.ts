@@ -44,7 +44,10 @@ export class PlayCommand extends BaseCommand {
         volume: 80,
       })
     }
-    if (!player.connected) await player.connect()
+    if (!player.connected || player.voiceChannelId !== input.voiceChannelId) {
+      player.voiceChannelId = input.voiceChannelId
+      await player.connect()
+    }
 
     const result = await player.search(input.query, input.user)
     if (!result.tracks.length) {
@@ -77,8 +80,13 @@ export class PlayCommand extends BaseCommand {
     }
     const existingPlayer = interaction.client.lavalink.getPlayer(interaction.guildId)
     if (existingPlayer?.connected && existingPlayer.voiceChannelId !== voiceChannel.id) {
-      await interaction.reply({ embeds: [createNotInSameVoiceChannelEmbed()], flags: MessageFlags.Ephemeral })
-      return
+      const nonBotCount = interaction.guild?.voiceStates.cache.filter(
+        (vs) => vs.channelId === existingPlayer.voiceChannelId && !vs.member?.user.bot
+      ).size ?? 1
+      if (nonBotCount > 0) {
+        await interaction.reply({ embeds: [createNotInSameVoiceChannelEmbed()], flags: MessageFlags.Ephemeral })
+        return
+      }
     }
     await this.run(
       {
@@ -106,8 +114,13 @@ export class PlayCommand extends BaseCommand {
     }
     const existingPlayer = message.client.lavalink.getPlayer(message.guildId!)
     if (existingPlayer?.connected && existingPlayer.voiceChannelId !== voiceChannel.id) {
-      await message.reply({ embeds: [createNotInSameVoiceChannelEmbed()] })
-      return
+      const nonBotCount = message.guild?.voiceStates.cache.filter(
+        (vs) => vs.channelId === existingPlayer.voiceChannelId && !vs.member?.user.bot
+      ).size ?? 1
+      if (nonBotCount > 0) {
+        await message.reply({ embeds: [createNotInSameVoiceChannelEmbed()] })
+        return
+      }
     }
     const reply: CommandReplyCallback = (embed) => message.reply({ embeds: [embed] })
     await this.run(

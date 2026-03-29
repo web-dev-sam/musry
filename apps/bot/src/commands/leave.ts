@@ -1,5 +1,5 @@
 import { BaseCommand, type CommandContext } from './base'
-import { createLeaveEmbed, createNotInSameVoiceChannelEmbed, createNotInVoiceChannelEmbed } from '@/builders/embed'
+import { createBotNotInVoiceChannelEmbed, createLeaveEmbed, createNotInSameVoiceChannelEmbed } from '@/builders/embed'
 
 export class LeaveCommand extends BaseCommand {
   readonly name = 'leave'
@@ -8,7 +8,7 @@ export class LeaveCommand extends BaseCommand {
 
   async handle(ctx: CommandContext): Promise<void> {
     if (!ctx.player?.connected) {
-      await ctx.replyError(createNotInVoiceChannelEmbed())
+      await ctx.replyError(createBotNotInVoiceChannelEmbed())
       return
     }
     if (ctx.userVoiceChannelId !== ctx.player.voiceChannelId) {

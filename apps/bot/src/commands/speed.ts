@@ -20,8 +20,6 @@ const cliArgsParser = new MessageParser()
 export class SpeedCommand extends BaseCommand {
   readonly name = 'speed'
   readonly description = 'Set playback speed (50–200). Pitch shifts with speed by default. Use 100 to reset.'
-  readonly requiresSameVoiceChannel = true
-
   buildOptions(builder: SlashCommandBuilder) {
     return builder
       .addIntegerOption((o) =>
