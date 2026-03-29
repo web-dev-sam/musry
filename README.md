@@ -42,6 +42,10 @@ Fill in `.env`:
 | `LAVALINK_HOST` | No | Lavalink hostname (default: `localhost`, pre-set to `lavalink` in Docker) |
 | `LAVALINK_PORT` | No | Lavalink port (default: `2333`) |
 | `LAVALINK_SECURE` | No | Connect to Lavalink over TLS (default: `false`) |
+| `SOUNDCLOUD_CLIENT_ID` | No | SoundCloud client ID — enables full track playback (without it, tracks play as 30s previews) |
+| `SOUNDCLOUD_OAUTH_TOKEN` | No | SoundCloud OAuth token — required alongside `SOUNDCLOUD_CLIENT_ID` for full playback |
+
+To get your SoundCloud credentials, open browser devtools while logged in to SoundCloud, find any `api-v2.soundcloud.com` request, and extract the `client_id` query parameter and the `OAuth <token>` value from the `Authorization` header.
 
 ### 3. Register slash commands
 

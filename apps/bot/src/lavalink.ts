@@ -35,7 +35,7 @@ export function createLavalinkManager(client: Client): LavalinkManager {
     sendToShard: (guildId, payload) => client.guilds.cache.get(guildId)?.shard.send(payload),
     autoSkip: true,
     playerOptions: {
-      defaultSearchPlatform: 'scsearch',
+      defaultSearchPlatform: 'ytsearch',
       onDisconnect: {
         autoReconnect: true,
         destroyPlayer: false,
@@ -58,9 +58,8 @@ export function createLavalinkManager(client: Client): LavalinkManager {
     console.error(`[Lavalink] Node ${node.id} error:`, error)
   })
 
-  manager.on('trackStart', async (player, track, payload) => {
-    const isManual = manualPlay.has(player.guildId)
-    console.log(`[trackStart] "${track?.info.title}" | manual=${isManual} | playing=${player.playing} | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
+  manager.on('trackStart', async (player, track) => {
+    console.log(`[Lavalink] Track started: "${track?.info.title}" in guild ${player.guildId}`)
     if (manualPlay.delete(player.guildId)) return
     if (!track || !player.textChannelId) return
     const channel = await client.channels.fetch(player.textChannelId).catch(() => null)
@@ -72,15 +71,15 @@ export function createLavalinkManager(client: Client): LavalinkManager {
   })
 
   manager.on('trackEnd', (player, track, payload) => {
-    console.log(`[trackEnd] "${track?.info.title}" | reason=${payload.reason} | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
+    console.log(`[Lavalink] Track ended: "${track?.info.title}" reason=${payload.reason} in guild ${player.guildId}`)
   })
 
   manager.on('trackStuck', (player, track, payload) => {
-    console.warn(`[trackStuck] "${track?.info.title}" | threshold=${payload.thresholdMs}ms | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
+    console.warn(`[Lavalink] Track stuck: "${track?.info.title}" after ${payload.thresholdMs}ms in guild ${player.guildId}`)
   })
 
   manager.on('trackError', async (player, track, payload) => {
-    console.error(`[trackError] "${track?.info.title}" | ${payload.exception?.message ?? JSON.stringify(payload.exception)} | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
+    console.error(`[Lavalink] Track error: "${track?.info.title}" — ${payload.exception?.message ?? payload.exception} in guild ${player.guildId}`)
 
     if (!track?.info.uri || !isYouTubeUrl(track.info.uri)) {
       console.log(`[musry] [SC-fallback] Not a YouTube track, skipping SoundCloud fallback`)

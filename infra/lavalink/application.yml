@@ -17,6 +17,10 @@ lavalink:
     playerUpdateInterval: 5
     soundcloudSearchEnabled: true
 
+scsoundcloud:
+  clientId: '${SOUNDCLOUD_CLIENT_ID}'
+  oauthToken: '${SOUNDCLOUD_OAUTH_TOKEN}'
+
 plugins:
   youtube:
     enabled: true

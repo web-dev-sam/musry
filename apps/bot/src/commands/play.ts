@@ -58,16 +58,12 @@ export class PlayCommand extends BaseCommand {
     const isPlaylist = result.loadType === 'playlist'
     if (isPlaylist && result.playlist) {
       player.queue.add(result.tracks)
-      const shouldPlay = !player.queue.current
-      console.log(`[play] playlist="${result.playlist.name}" | shouldPlay=${shouldPlay} | playing=${player.playing} | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
-      if (shouldPlay) { markManualPlay(ctx.guildId); await player.play() }
+      if (!player.queue.current) { markManualPlay(ctx.guildId); await player.play() }
       await ctx.reply(createPlayAddedPlaylistEmbed(result.playlist.name, result.tracks.length))
     } else {
       const track = result.tracks[0]!
       player.queue.add(track)
-      const shouldPlay = !player.queue.current
-      console.log(`[play] track="${track.info.title}" | shouldPlay=${shouldPlay} | playing=${player.playing} | current="${player.queue.current?.info.title}" | queue=${player.queue.tracks.length}`)
-      if (shouldPlay) { markManualPlay(ctx.guildId); await player.play() }
+      if (!player.queue.current) { markManualPlay(ctx.guildId); await player.play() }
       await ctx.reply(createPlayAddedTrackEmbed(track.info.title, track.info.author ?? 'Unknown', track.info.uri, track.info.sourceName))
     }
   }
