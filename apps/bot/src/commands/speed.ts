@@ -8,7 +8,7 @@ import {
   createNothingPlayingEmbed,
   createSpeedEmbed,
   createSpeedUsageEmbed,
-} from '@/builders/embed'
+} from '@/utils/embed'
 import { round } from '@/utils/math'
 import { MessageParser } from '@/utils/parser'
 

@@ -10,7 +10,7 @@ import {
   createPlayAddedTrackEmbed,
   createPlayAddedPlaylistEmbed,
   createPlayUsageEmbed,
-} from '@/builders/embed'
+} from '@/utils/embed'
 import type { GuildId, VoiceChannelId, ChannelId } from '@/utils/types'
 
 type PlayInput = {

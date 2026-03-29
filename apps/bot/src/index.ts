@@ -4,7 +4,7 @@ import { register as registerReady } from '@/events/ready'
 import { register as registerMessageCommands } from '@/events/messageCreate'
 import { register as registerVoiceStateUpdate } from '@/events/voiceStateUpdate'
 import { commands } from '@/commands'
-import { createCommandErrorEmbed } from '@/builders/embed'
+import { createCommandErrorEmbed } from '@/utils/embed'
 
 // Ensure required env vars are set
 const required = ['DISCORD_TOKEN', 'CLIENT_ID'] as const

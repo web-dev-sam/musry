@@ -1,7 +1,7 @@
 import type { Client } from 'discord.js'
 import { PREFIX } from '@/constants'
 import { commands } from '@/commands'
-import { createHelpEmbed, createCommandErrorEmbed } from '@/builders/embed'
+import { createHelpEmbed, createCommandErrorEmbed } from '@/utils/embed'
 
 const messageCommandMap = new Map(
   [...commands.values()].flatMap((cmd) => cmd.data.aliases.map((alias) => [alias, cmd]))

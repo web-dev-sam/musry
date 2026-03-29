@@ -1,6 +1,6 @@
 import { LavalinkManager } from 'lavalink-client'
 import type { Client } from 'discord.js'
-import { createFallbackEmbed } from './builders/embed'
+import { createFallbackEmbed } from './utils/embed'
 
 function isYouTubeUrl(uri: string): boolean {
   return uri.includes('youtube.com/') || uri.includes('youtu.be/')
