@@ -49,6 +49,7 @@ export function createHelpEmbed(): EmbedBuilder {
     .setDescription(
       [
         `\`${PREFIX}play <url or search>\` — play a song or add it to the queue`,
+        `\`${PREFIX}playnext <url or search>\` (or \`${PREFIX}pn\`, \`${PREFIX}first\`) — add a song to the front of the queue`,
         `\`${PREFIX}skip\` — skip the current song`,
         `\`${PREFIX}stop\` — stop playback and clear the queue`,
         `\`${PREFIX}pause\` — pause the current song`,
@@ -90,6 +91,26 @@ export function createPlayAddedPlaylistEmbed(name: string, count: number): Embed
     .setTitle('Added Playlist')
     .setDescription(`**${name}**`)
     .addFields({ name: 'Tracks', value: String(count), inline: true })
+}
+
+// ── Play Next ─────────────────────────────────────────────────────────────────
+
+export function createPlayNextUsageEmbed(): EmbedBuilder {
+  return errorEmbed().setDescription(`Usage: \`${PREFIX}playnext <url or search term>\``)
+}
+
+export function createPlayNextAddedTrackEmbed(
+  title: string,
+  author: string,
+  uri: string | undefined,
+  sourceName: string | undefined
+): EmbedBuilder {
+  const titleText = uri ? `**[${title}](${uri})**` : `**${title}**`
+  return new EmbedBuilder()
+    .setColor(sourceColor(sourceName))
+    .setTitle('Up Next')
+    .setDescription(titleText)
+    .addFields({ name: 'By', value: author, inline: true })
 }
 
 // ── Skip ──────────────────────────────────────────────────────────────────────

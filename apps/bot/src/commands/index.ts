@@ -1,6 +1,7 @@
 import type { ChatInputCommandInteraction, Message, SlashCommandOptionsOnlyBuilder } from 'discord.js'
 import { Collection } from 'discord.js'
 import { LeaveCommand } from './leave'
+import { PlayNextCommand } from './playnext'
 import { PauseCommand } from './pause'
 import { PlayCommand } from './play'
 import { QueueCommand } from './queue'
@@ -18,6 +19,7 @@ export type Command = {
 // To add a new command: import its class and add one line here.
 const registry: Command[] = [
   new PlayCommand(),
+  new PlayNextCommand(),
   new LeaveCommand(),
   new SkipCommand(),
   new StopCommand(),
