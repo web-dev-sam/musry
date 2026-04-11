@@ -31,6 +31,8 @@ export type CommandContext = {
   reply: CommandReplyCallback
   /** Send an ephemeral embed reply (only visible to the invoking user). */
   replyError: CommandReplyCallback
+  /** Send a plain text message to the channel without replying or embedding. */
+  say: (content: string) => Promise<unknown>
   /** Raw argument string. For slash commands this is populated by {@link BaseCommand.getSlashArgs}. */
   args: string
   /** Parsed arguments populated by `@WithParser`. `undefined` for commands that don't use it. */
@@ -63,6 +65,15 @@ export abstract class BaseCommand {
 
   /** Extra text-command aliases. The command name itself is always included. */
   readonly aliases: string[] = []
+
+  /**
+   * Custom message prefix for this command. When set, overrides the global PREFIX.
+   * The command will only respond to messages that start with this prefix.
+   */
+  readonly prefix?: string
+
+  /** Whether to register this command as a Discord slash command. Defaults to true. */
+  readonly slashCommand: boolean = true
 
   /** Override to add slash command options. Return the modified builder. */
   buildOptions(builder: SlashCommandBuilder): SlashCommandOptionsOnlyBuilder {
@@ -113,6 +124,7 @@ export abstract class BaseCommand {
       userVoiceChannelId,
       reply: (embed) => interaction.reply({ embeds: [embed] }),
       replyError: (embed) => interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral }),
+      say: (content) => interaction.channel?.send(content) ?? interaction.reply({ content }),
       args: this.getSlashArgs(interaction),
       commandArgs: undefined,
       source: 'slash',
@@ -136,6 +148,7 @@ export abstract class BaseCommand {
       userVoiceChannelId,
       reply,
       replyError: reply,
+      say: (content) => message.channel.send(content),
       args,
       commandArgs: undefined,
       source: 'message',

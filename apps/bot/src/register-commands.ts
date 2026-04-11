@@ -13,7 +13,9 @@ const token = process.env.DISCORD_TOKEN!
 const clientId = process.env.CLIENT_ID!
 const guildId = process.env.GUILD_ID
 
-const commandPayloads = [...commands.values()].map((cmd) => cmd.data.builder.toJSON())
+const commandPayloads = [...commands.values()]
+  .filter((cmd) => cmd.slashCommand !== false)
+  .map((cmd) => cmd.data.builder.toJSON())
 
 const rest = new REST().setToken(token)
 
