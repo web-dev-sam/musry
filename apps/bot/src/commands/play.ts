@@ -8,6 +8,7 @@ import {
 } from '@/utils/embed'
 import { RequireUserInVoiceChannel, RequiresSameVoiceChannelOrBotInEmpty } from '../guards/guards'
 import { markManualPlay } from '@/lavalink'
+import { resolveQuery } from '@/utils/resolve'
 import type { VoiceChannelId } from '@/utils/types'
 
 export class PlayCommand extends BaseCommand {
@@ -49,19 +50,18 @@ export class PlayCommand extends BaseCommand {
       await player.changeVoiceState({ voiceChannelId })
     }
 
-    const result = await player.search(ctx.args, ctx.user)
-    if (!result.tracks.length) {
+    const resolved = await resolveQuery(player, ctx.args, ctx.user)
+    if (resolved.kind === 'not_found') {
       await ctx.replyError(createPlayNotFoundEmbed())
       return
     }
 
-    const isPlaylist = result.loadType === 'playlist'
-    if (isPlaylist && result.playlist) {
-      player.queue.add(result.tracks)
+    if (resolved.kind === 'playlist') {
+      player.queue.add(resolved.tracks)
       if (!player.queue.current) { markManualPlay(ctx.guildId); await player.play() }
-      await ctx.reply(createPlayAddedPlaylistEmbed(result.playlist.name, result.tracks.length))
+      await ctx.reply(createPlayAddedPlaylistEmbed(resolved.name, resolved.tracks.length))
     } else {
-      const track = result.tracks[0]!
+      const { track } = resolved
       player.queue.add(track)
       if (!player.queue.current) { markManualPlay(ctx.guildId); await player.play() }
       await ctx.reply(createPlayAddedTrackEmbed(track.info.title, track.info.author ?? 'Unknown', track.info.uri, track.info.sourceName))

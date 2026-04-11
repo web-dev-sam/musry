@@ -99,6 +99,13 @@ export function createPlayNextUsageEmbed(): EmbedBuilder {
   return errorEmbed().setDescription(`Usage: \`${PREFIX}playnext <url or search term>\``)
 }
 
+export function createPlayNextAddedPlaylistEmbed(name: string, count: number): EmbedBuilder {
+  return primaryEmbed()
+    .setTitle('Up Next')
+    .setDescription(`**${name}**`)
+    .addFields({ name: 'Tracks', value: String(count), inline: true })
+}
+
 export function createPlayNextAddedTrackEmbed(
   title: string,
   author: string,
