@@ -59,6 +59,7 @@ export class TtsCommand extends BaseCommand {
       setTtsRestoreState(ctx.guildId, { track: currentTrack, position: currentPosition, wasPlaying })
     }
     markManualPlay(ctx.guildId)
+    await new Promise<void>((resolve) => setTimeout(resolve, 600))
     await player.play({ track: result.tracks[0] })
   }
 }
