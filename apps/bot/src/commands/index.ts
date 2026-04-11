@@ -1,5 +1,6 @@
 import type { ChatInputCommandInteraction, Message, SlashCommandOptionsOnlyBuilder } from 'discord.js'
 import { Collection } from 'discord.js'
+import { JoinCommand } from './join'
 import { LeaveCommand } from './leave'
 import { PlayNextCommand } from './playnext'
 import { PauseCommand } from './pause'
@@ -10,6 +11,7 @@ import { SkipCommand } from './skip'
 import { SpeedCommand } from './speed'
 import { StopCommand } from './stop'
 import { ThreeCommand } from './three'
+import { TtsCommand } from './tts'
 
 export type Command = {
   data: { builder: SlashCommandOptionsOnlyBuilder; aliases: string[] }
@@ -24,6 +26,7 @@ export type Command = {
 // To add a new command: import its class and add one line here.
 const registry: Command[] = [
   new PlayCommand(),
+  new JoinCommand(),
   new PlayNextCommand(),
   new LeaveCommand(),
   new SkipCommand(),
@@ -33,6 +36,7 @@ const registry: Command[] = [
   new QueueCommand(),
   new SpeedCommand(),
   new ThreeCommand(),
+  new TtsCommand(),
 ]
 
 export const commands = new Collection<string, Command>(registry.map((cmd) => [cmd.data.builder.name, cmd]))

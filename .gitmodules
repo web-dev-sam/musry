@@ -1,3 +1,6 @@
 [submodule "infra/yt-cipher"]
 	path = infra/yt-cipher
 	url = https://github.com/kikkia/yt-cipher.git
+[submodule "infra/skybot-lavalink-plugin"]
+	path = infra/skybot-lavalink-plugin
+	url = https://github.com/DuncteBot/skybot-lavalink-plugin.git

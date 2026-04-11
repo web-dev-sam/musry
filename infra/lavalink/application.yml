@@ -22,6 +22,20 @@ scsoundcloud:
   oauthToken: '${SOUNDCLOUD_OAUTH_TOKEN}'
 
 plugins:
+  dunctebot:
+    ttsLanguage: 'de-DE'
+    sources:
+      tts: true
+      getyarn: false
+      clypit: false
+      pornhub: false
+      reddit: false
+      ocremix: false
+      tiktok: false
+      mixcloud: false
+      soundgasm: false
+      pixeldrain: false
+      tumblr: false
   youtube:
     enabled: true
     allowSearch: true

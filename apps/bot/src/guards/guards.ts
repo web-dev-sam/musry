@@ -1,5 +1,5 @@
 import type { EmbedBuilder } from 'discord.js'
-import { createBotNotInVoiceChannelEmbed, createNotInSameVoiceChannelEmbed, createNotInVoiceChannelEmbed, createNothingPlayingEmbed } from '@/utils/embed'
+import { createArgsTooLongEmbed, createBotNotInVoiceChannelEmbed, createNotInSameVoiceChannelEmbed, createNotInVoiceChannelEmbed, createNothingPlayingEmbed } from '@/utils/embed'
 import type { BaseCommand, CommandContext } from '../commands/base'
 import { ParsedArgs, type MessageParser } from '@/utils/parser'
 
@@ -113,6 +113,21 @@ export function RequireTrackPlaying(originalMethod: HandleMethod, _context: Clas
       return
     }
     return originalMethod.call(this, ctx)
+  }
+}
+
+/**
+ * Rejects the command if `ctx.args` exceeds `max` characters.
+ */
+export function MaxArgsLength(max: number) {
+  return function (originalMethod: HandleMethod, _context: ClassMethodDecoratorContext) {
+    return async function (this: unknown, ctx: CommandContext): Promise<void> {
+      if (ctx.args && ctx.args.length > max) {
+        await ctx.replyError(createArgsTooLongEmbed(max))
+        return
+      }
+      return originalMethod.call(this, ctx)
+    }
   }
 }
 

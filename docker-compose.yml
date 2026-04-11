@@ -7,7 +7,9 @@ services:
       - OVERRIDE_PLAYER_VARIANT=IAS
 
   lavalink:
-    image: ghcr.io/lavalink-devs/lavalink:4
+    build:
+      context: .
+      dockerfile: infra/lavalink/Dockerfile
     restart: unless-stopped
     ports:
       - '2333:2333'

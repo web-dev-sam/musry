@@ -1,4 +1,5 @@
 import { LavalinkManager } from 'lavalink-client'
+import type { Track } from 'lavalink-client'
 import type { Client } from 'discord.js'
 import { createFallbackEmbed, createNowPlayingEmbed } from './utils/embed'
 
@@ -19,6 +20,14 @@ export function markManualPlay(guildId: string): void {
   manualPlay.add(guildId)
 }
 
+type TtsRestoreState = { track: Track; position: number; wasPlaying: boolean }
+const ttsRestoreMap = new Map<string, TtsRestoreState>()
+const ttsSeekMap = new Map<string, { position: number; wasPlaying: boolean }>()
+
+export function setTtsRestoreState(guildId: string, state: TtsRestoreState): void {
+  ttsRestoreMap.set(guildId, state)
+}
+
 export function createLavalinkManager(client: Client): LavalinkManager {
   const manager = new LavalinkManager({
     nodes: [
@@ -28,8 +37,8 @@ export function createLavalinkManager(client: Client): LavalinkManager {
         port: Number(process.env.LAVALINK_PORT ?? 2333),
         authorization: process.env.LAVALINK_PASSWORD ?? 'youshallnotpass',
         secure: process.env.LAVALINK_SECURE === 'true',
-        retryDelay: 3000,
-        retryAmount: 10,
+        retryDelay: 5000,
+        retryAmount: 20,
       },
     ],
     sendToShard: (guildId, payload) => client.guilds.cache.get(guildId)?.shard.send(payload),
@@ -60,6 +69,15 @@ export function createLavalinkManager(client: Client): LavalinkManager {
 
   manager.on('trackStart', async (player, track) => {
     console.log(`[Lavalink] Track started: "${track?.info.title}" in guild ${player.guildId}`)
+
+    const seekState = ttsSeekMap.get(player.guildId)
+    if (seekState) {
+      ttsSeekMap.delete(player.guildId)
+      await player.seek(seekState.position)
+      if (!seekState.wasPlaying) await player.pause()
+      return
+    }
+
     if (manualPlay.delete(player.guildId)) return
     if (!track || !player.textChannelId) return
     const channel = await client.channels.fetch(player.textChannelId).catch(() => null)
@@ -72,6 +90,17 @@ export function createLavalinkManager(client: Client): LavalinkManager {
 
   manager.on('trackEnd', (player, track, payload) => {
     console.log(`[Lavalink] Track ended: "${track?.info.title}" reason=${payload.reason} in guild ${player.guildId}`)
+
+    const state = ttsRestoreMap.get(player.guildId)
+    if (state) {
+      ttsRestoreMap.delete(player.guildId)
+      if (payload.reason === 'finished') {
+        // Insert the interrupted track at the front so autoSkip picks it up
+        player.queue.add(state.track, 0)
+        ttsSeekMap.set(player.guildId, { position: state.position, wasPlaying: state.wasPlaying })
+      }
+      // If reason is 'replaced' / 'stopped' (user skipped or stopped during TTS), discard state
+    }
   })
 
   manager.on('trackStuck', (player, track, payload) => {

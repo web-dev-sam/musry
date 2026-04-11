@@ -206,6 +206,30 @@ export function createQueueEmbed(
   return embed
 }
 
+// ── TTS ───────────────────────────────────────────────────────────────────────
+
+export function createTtsUsageEmbed(): EmbedBuilder {
+  return errorEmbed().setDescription(`Usage: \`${PREFIX}tts <text>\``)
+}
+
+export function createTtsNotFoundEmbed(): EmbedBuilder {
+  return errorEmbed().setDescription('Could not generate TTS for that text.')
+}
+
+export function createArgsTooLongEmbed(max: number): EmbedBuilder {
+  return errorEmbed().setDescription(`Text must be ${max} characters or fewer.`)
+}
+
+// ── Join ──────────────────────────────────────────────────────────────────────
+
+export function createJoinEmbed(): EmbedBuilder {
+  return primaryEmbed().setDescription('Joined the voice channel.')
+}
+
+export function createJoinAlreadyInChannelEmbed(): EmbedBuilder {
+  return errorEmbed().setDescription("Already in your voice channel.")
+}
+
 // ── Leave ─────────────────────────────────────────────────────────────────────
 
 export function createBotNotInVoiceChannelEmbed(): EmbedBuilder {
