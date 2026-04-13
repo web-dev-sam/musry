@@ -7,6 +7,7 @@ import type { VoiceChannelId } from '@/utils/types'
 
 export class TtsCommand extends BaseCommand {
   readonly name = 'tts'
+  readonly aliases = ['say', 'yap', '.', 'mimimi']
   readonly description = 'Speak text in voice — pauses music, speaks, then resumes'
 
   buildOptions(builder: SlashCommandBuilder) {
