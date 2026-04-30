@@ -240,6 +240,46 @@ export function createLeaveEmbed(): EmbedBuilder {
   return primaryEmbed().setDescription('Left the voice channel.')
 }
 
+// ── Sleep ─────────────────────────────────────────────────────────────────────
+
+export function createSleepSetEmbed(minutes: number): EmbedBuilder {
+  return primaryEmbed().setDescription(`Sleep timer set. Music will stop in **${minutes} minute${minutes === 1 ? '' : 's'}**.`)
+}
+
+export function createSleepStatusEmbed(remainingMin: number): EmbedBuilder {
+  return primaryEmbed().setDescription(`Sleep timer active — music stops in **${remainingMin} minute${remainingMin === 1 ? '' : 's'}**.`)
+}
+
+export function createSleepCancelledEmbed(): EmbedBuilder {
+  return primaryEmbed().setDescription('Sleep timer cancelled.')
+}
+
+export function createSleepNotActiveEmbed(): EmbedBuilder {
+  return primaryEmbed().setDescription('No sleep timer is active.')
+}
+
+export function createSleepInvalidEmbed(): EmbedBuilder {
+  return errorEmbed().setDescription('Usage: `.sleep <minutes>` (1–1440), `.sleep` to check, or `.sleep cancel` to cancel.')
+}
+
+export function createSleepReplayEmbed(count: number): EmbedBuilder {
+  return primaryEmbed().setDescription(`Replaying **${count} track${count === 1 ? '' : 's'}** from the last sleep session.`)
+}
+
+export function createSleepHistoryEmbed(
+  history: { tracks: { info: { title: string } }[]; durationMs: number }[]
+): EmbedBuilder {
+  const lines = history.map((e, i) => {
+    const first = e.tracks[0]?.info.title ?? 'Unknown'
+    const more = e.tracks.length > 1 ? ` +${e.tracks.length - 1} more` : ''
+    const mins = Math.round(e.durationMs / 60_000)
+    return `\`${i + 1}\` **${first}**${more} · ${mins} min`
+  })
+  return primaryEmbed()
+    .setTitle('Sleep Queue History')
+    .setDescription(`Use \`.sleep <number>\` to replay a queue.\n\n${lines.join('\n')}`)
+}
+
 // ── Fallback ──────────────────────────────────────────────────────────────────
 
 export function createFallbackEmbed(

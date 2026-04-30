@@ -12,6 +12,7 @@ import { SpeedCommand } from './speed'
 import { StopCommand } from './stop'
 import { ThreeCommand } from './three'
 import { TtsCommand } from './tts'
+import { SleepCommand } from './sleep'
 
 export type Command = {
   data: { builder: SlashCommandOptionsOnlyBuilder; aliases: string[] }
@@ -37,6 +38,7 @@ const registry: Command[] = [
   new SpeedCommand(),
   new ThreeCommand(),
   new TtsCommand(),
+  new SleepCommand(),
 ]
 
 export const commands = new Collection<string, Command>(registry.map((cmd) => [cmd.data.builder.name, cmd]))

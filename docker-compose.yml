@@ -34,5 +34,6 @@ services:
       - LAVALINK_SECURE=false
     volumes:
       - ./apps/bot/src:/app/apps/bot/src
+      - ./data:/app/apps/bot/data
     depends_on:
       - lavalink
