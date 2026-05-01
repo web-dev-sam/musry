@@ -3,7 +3,7 @@ import { writeFile } from 'fs/promises'
 import { dirname } from 'path'
 import { SlashCommandBuilder, type ChatInputCommandInteraction } from 'discord.js'
 import type { Client } from 'discord.js'
-import type { Track, UnresolvedTrack } from 'lavalink-client'
+import type { Track } from 'lavalink-client'
 import { BaseCommand, type CommandContext } from './base'
 import {
   createSleepSetEmbed,
@@ -21,7 +21,20 @@ import { markManualPlay } from '@/lavalink'
 import type { GuildId, VoiceChannelId } from '@/utils/types'
 
 type SleepTimer = { timer: ReturnType<typeof setTimeout>; endsAt: number; userId: string }
-type SavedState = { tracks: (Track | UnresolvedTrack)[]; durationMs: number }
+type SavedTrackInfo = {
+  title: string
+  author: string | undefined
+  uri: string | undefined
+  sourceName: string | undefined
+  duration: number
+  isSeekable: boolean | undefined
+  isStream: boolean | undefined
+  artworkUrl: string | null | undefined
+  identifier: string | undefined
+  isrc: string | null | undefined
+}
+type SavedTrack = { encoded: string; info: SavedTrackInfo }
+type SavedState = { tracks: SavedTrack[]; durationMs: number }
 
 const MAX_HISTORY = 10
 const HISTORY_FILE = process.env.SLEEP_HISTORY_FILE ?? './data/sleep-history.json'
@@ -96,7 +109,7 @@ async function replayEntry(ctx: CommandContext, saved: SavedState): Promise<void
   } else if (player.voiceChannelId !== ctx.userVoiceChannelId) {
     await player.changeVoiceState({ voiceChannelId: ctx.userVoiceChannelId })
   }
-  player.queue.add(saved.tracks)
+  player.queue.add(saved.tracks as unknown as Track[])
   startSleepTimer(ctx.client, guildId, saved.durationMs, ctx.user.id)
   markManualPlay(guildId)
   await player.play()
@@ -198,7 +211,24 @@ export class SleepCommand extends BaseCommand {
         return
       }
       const durationMs = n * 60_000
-      const tracks: (Track | UnresolvedTrack)[] = [ctx.player!.queue.current!, ...ctx.player!.queue.tracks]
+      const raw = [ctx.player!.queue.current!, ...ctx.player!.queue.tracks]
+      const tracks: SavedTrack[] = raw
+        .filter((t) => t.encoded != null)
+        .map((t) => ({
+          encoded: t.encoded!,
+          info: {
+            title: t.info.title,
+            author: t.info.author,
+            uri: t.info.uri,
+            sourceName: t.info.sourceName,
+            duration: t.info.duration ?? 0,
+            isSeekable: t.info.isSeekable,
+            isStream: t.info.isStream,
+            artworkUrl: t.info.artworkUrl,
+            identifier: t.info.identifier,
+            isrc: t.info.isrc,
+          },
+        }))
       pushHistory(ctx.user.id, { tracks, durationMs })
       startSleepTimer(ctx.client, guildId, durationMs, ctx.user.id)
       await ctx.reply(createSleepSetEmbed(n))

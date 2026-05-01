@@ -16,5 +16,8 @@ COPY --from=plugin-builder \
      /build/plugin/build/libs/skybot-lavalink-plugin-1.7.1.jar \
      /opt/Lavalink/plugins/skybot-lavalink-plugin-1.7.1.jar
 
+RUN wget -q -O /opt/Lavalink/plugins/youtube-plugin-1.18.0.jar \
+    https://maven.lavalink.dev/releases/dev/lavalink/youtube/youtube-plugin/1.18.0/youtube-plugin-1.18.0.jar
+
 RUN chown -R lavalink:lavalink /opt/Lavalink/plugins
 USER lavalink

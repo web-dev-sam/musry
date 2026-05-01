@@ -267,10 +267,10 @@ export function createSleepReplayEmbed(count: number): EmbedBuilder {
 }
 
 export function createSleepHistoryEmbed(
-  history: { tracks: { info: { title: string } }[]; durationMs: number }[]
+  history: { tracks: { title: string }[]; durationMs: number }[]
 ): EmbedBuilder {
   const lines = history.map((e, i) => {
-    const first = e.tracks[0]?.info.title ?? 'Unknown'
+    const first = e.tracks[0]?.title ?? 'Unknown'
     const more = e.tracks.length > 1 ? ` +${e.tracks.length - 1} more` : ''
     const mins = Math.round(e.durationMs / 60_000)
     return `\`${i + 1}\` **${first}**${more} · ${mins} min`

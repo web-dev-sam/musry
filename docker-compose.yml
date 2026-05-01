@@ -22,6 +22,12 @@ services:
       - SOUNDCLOUD_OAUTH_TOKEN=${SOUNDCLOUD_OAUTH_TOKEN}
     depends_on:
       - yt-cipher
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --header=\"Authorization: $LAVALINK_PASSWORD\" http://localhost:2333/v4/info"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   bot:
     build: .
@@ -36,4 +42,5 @@ services:
       - ./apps/bot/src:/app/apps/bot/src
       - ./data:/app/apps/bot/data
     depends_on:
-      - lavalink
+      lavalink:
+        condition: service_healthy
